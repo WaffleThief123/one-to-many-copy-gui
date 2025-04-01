@@ -29,31 +29,31 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ui-copy-tool-windows
+          name: name: ui-copy-tool-windows-${{ github.ref_name }}
           path: dist\*
 
-  build-macos:
-    name: Build for macOS
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
+#  build-macos:
+#    name: Build for macOS
+#    runs-on: macos-latest
+#    steps:
+#      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
+#      - name: Set up Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: 3.11
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+#      - name: Install PyInstaller
+#        run: pip install pyinstaller
 
-      - name: Build Binary
-        run: |
-          pyinstaller --onefile --windowed ui_copy_tool.py
-          cp machine_list.json dist/
-          cp ignored_extensions.json dist/
+#      - name: Build Binary
+#        run: |
+#          pyinstaller --onefile --windowed ui_copy_tool.py
+#          cp machine_list.json dist/
+#          cp ignored_extensions.json dist/
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-copy-tool-macos
-          path: dist/*
+#      - name: Upload Artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ui-copy-tool-macos
+#          path: dist/*
