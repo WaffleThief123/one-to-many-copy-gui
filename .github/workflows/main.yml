@@ -26,7 +26,6 @@ jobs:
       - name: Build EXE
         run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
-          copy machine_list.json dist\
           copy ignored_extensions.json dist\
 
       - name: Upload Artifact
