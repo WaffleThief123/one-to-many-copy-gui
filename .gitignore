@@ -1,3 +1,11 @@
+# MacOS
+.DS_store
+.DS_Store
+
+# project Specific: 
+sync_log.txt
+machine_list.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
