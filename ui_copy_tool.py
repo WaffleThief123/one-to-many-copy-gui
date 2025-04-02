@@ -66,6 +66,15 @@ def count_total_files(src: Path) -> int:
         total += len(files)
     return total
 
+def files_are_identical(src_file: Path, dst_file: Path) -> bool:
+    try:
+        return (
+            src_file.stat().st_size == dst_file.stat().st_size and
+            int(src_file.stat().st_mtime) == int(dst_file.stat().st_mtime)
+        )
+    except FileNotFoundError:
+        return False
+
 def copy_recursively(src: Path, dst: Path, ignored_exts=None, progress_callback=None):
     total_files = count_total_files(src)
     copied = 0
@@ -212,17 +221,6 @@ class HostManager(tk.Toplevel):
             del self.machine_vars[name]
         self.host_listbox.delete(sel[0])
         self.modified = True
-
-    def save_and_close(self):
-        if self.modified:
-            try:
-                with open(IGNORED_EXTENSIONS_FILE, "w") as f:
-                    json.dump(self.extension_list, f, indent=2)
-                logger.info("Updated ignored_extensions.json")
-            except Exception as e:
-                logger.error(f"Failed to save ignored extensions: {e}")
-                messagebox.showerror("Error", f"Could not save ignored extensions:\n{e}")
-        self.destroy()
 
 class ExtensionManager(tk.Toplevel):
     def __init__(self, parent, extension_list):
