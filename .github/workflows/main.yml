@@ -42,7 +42,6 @@ jobs:
       - run: pip install pyinstaller
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
-          cp machine_list.json dist/
           cp ignored_extensions.json dist/
       - id: asset
         run: echo "asset=dist/ui_copy_tool" >> $GITHUB_OUTPUT
@@ -63,7 +62,6 @@ jobs:
       - run: pip install pyinstaller
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
-          cp machine_list.json dist/
           cp ignored_extensions.json dist/
       - id: asset
         run: echo "asset=dist/ui_copy_tool" >> $GITHUB_OUTPUT
@@ -84,7 +82,6 @@ jobs:
       - run: pip install pyinstaller
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
-          cp machine_list.json dist/
           cp ignored_extensions.json dist/
       - id: asset
         run: echo "asset=dist/ui_copy_tool" >> $GITHUB_OUTPUT
