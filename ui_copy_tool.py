@@ -43,21 +43,22 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 def load_ignored_extensions():
+    default_extensions = [".tmp", ".bak", ".log", ".DS_Store"]
+    if not os.path.exists(IGNORED_EXTENSIONS_FILE):
+        try:
+            with open(IGNORED_EXTENSIONS_FILE, "w") as f:
+                json.dump(default_extensions, f, indent=2)
+            logger.info("Created default ignored_extensions.json")
+            return default_extensions
+        except Exception as e:
+            logger.warning(f"Failed to create ignored_extensions.json: {e}")
+            return []
     try:
         with open(IGNORED_EXTENSIONS_FILE, "r") as f:
             return json.load(f)
     except Exception as e:
         logger.warning(f"Could not load ignored extensions: {e}")
         return []
-
-def files_are_identical(src_file: Path, dst_file: Path) -> bool:
-    try:
-        return (
-            src_file.stat().st_size == dst_file.stat().st_size and
-            int(src_file.stat().st_mtime) == int(dst_file.stat().st_mtime)
-        )
-    except FileNotFoundError:
-        return False
 
 def count_total_files(src: Path) -> int:
     total = 0
