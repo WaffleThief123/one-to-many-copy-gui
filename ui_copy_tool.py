@@ -216,14 +216,12 @@ class HostManager(tk.Toplevel):
     def save_and_close(self):
         if self.modified:
             try:
-                new_list = [{"name": k, "path": v[1], "type": v[2]} for k, v in self.machine_vars.items()]
-                with open(MACHINE_LIST_FILE, "w") as f:
-                    json.dump(new_list, f, indent=2)
-                logger.info("Updated machine_list.json")
+                with open(IGNORED_EXTENSIONS_FILE, "w") as f:
+                    json.dump(self.extension_list, f, indent=2)
+                logger.info("Updated ignored_extensions.json")
             except Exception as e:
-                logger.error(f"Failed to save machine list: {e}")
-                messagebox.showerror("Error", f"Failed to save machine list:\n{e}")
-                return
+                logger.error(f"Failed to save ignored extensions: {e}")
+                messagebox.showerror("Error", f"Could not save ignored extensions:\n{e}")
         self.destroy()
 
 class ExtensionManager(tk.Toplevel):
@@ -255,6 +253,37 @@ class ExtensionManager(tk.Toplevel):
         self.listbox.delete(0, tk.END)
         for ext in self.extension_list:
             self.listbox.insert(tk.END, ext)
+    def add_extension(self):
+        ext = self.entry.get().strip()
+        if not ext.startswith("."):
+            ext = "." + ext
+        if ext in self.extension_list:
+            messagebox.showwarning("Exists", f"'{ext}' is already in the list.")
+            return
+        self.extension_list.append(ext)
+        self.listbox.insert(tk.END, ext)
+        self.modified = True
+        self.entry.delete(0, tk.END)
+
+    def remove_selected(self):
+        sel = self.listbox.curselection()
+        if not sel:
+            return
+        value = self.listbox.get(sel[0])
+        self.extension_list.remove(value)
+        self.listbox.delete(sel[0])
+        self.modified = True
+
+    def save_and_close(self):
+        if self.modified:
+            try:
+                with open(IGNORED_EXTENSIONS_FILE, "w") as f:
+                    json.dump(self.extension_list, f, indent=2)
+                logger.info("Updated ignored_extensions.json")
+            except Exception as e:
+                logger.error(f"Failed to save ignored extensions: {e}")
+                messagebox.showerror("Error", f"Could not save ignored extensions:\n{e}")
+        self.destroy()
 
 class CopyApp:
     def __init__(self, root):
