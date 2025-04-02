@@ -1,35 +1,75 @@
-name: Build Standalone GUI App
+name: Build One-to-Many Sync Tool
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
-  workflow_dispatch:
 
 jobs:
   build-windows:
-    name: Build for Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
-      - name: Build EXE
-        run: |
+          python-version: '3.13'
+      - run: pip install pyinstaller
+      - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
+          copy machine_list.json dist\
           copy ignored_extensions.json dist\
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: ui-copy-tool-windows
+          name: one-to-many-windows
           path: dist\*
+
+  build-macos-intel:
+    runs-on: macos-13  # Intel runner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pyinstaller
+      - run: |
+          pyinstaller --onefile --windowed ui_copy_tool.py
+          cp machine_list.json dist/
+          cp ignored_extensions.json dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-to-many-macos-intel
+          path: dist/*
+
+  build-macos-arm64:
+    runs-on: macos-latest  # Apple Silicon runner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pyinstaller
+      - run: |
+          pyinstaller --onefile --windowed ui_copy_tool.py
+          cp machine_list.json dist/
+          cp ignored_extensions.json dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-to-many-macos-arm64
+          path: dist/*
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pyinstaller
+      - run: |
+          pyinstaller --onefile --windowed ui_copy_tool.py
+          cp machine_list.json dist/
+          cp ignored_extensions.json dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-to-many-linux
+          path: dist/*
