@@ -1,13 +1,18 @@
-name: Build One-to-Many Sync Tool
+name: Build and Release Sync Tool
 
 on:
   push:
     tags:
       - 'v*'
 
+permissions:
+  contents: write  # Required to create releases and upload assets
+
 jobs:
   build-windows:
     runs-on: windows-latest
+    outputs:
+      asset_path: ${{ steps.asset.outputs.asset }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,13 +23,17 @@ jobs:
           pyinstaller --onefile --windowed ui_copy_tool.py
           copy machine_list.json dist\
           copy ignored_extensions.json dist\
+      - id: asset
+        run: echo "asset=dist\\ui_copy_tool.exe" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-windows
           path: dist\*
 
-  build-macos-intel:
-    runs-on: macos-13  # Intel runner
+  build-linux:
+    runs-on: ubuntu-latest
+    outputs:
+      asset_path: ${{ steps.asset.outputs.asset }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,13 +44,38 @@ jobs:
           pyinstaller --onefile --windowed ui_copy_tool.py
           cp machine_list.json dist/
           cp ignored_extensions.json dist/
+      - id: asset
+        run: echo "asset=dist/ui_copy_tool" >> $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-to-many-linux
+          path: dist/*
+
+  build-macos-intel:
+    runs-on: macos-13
+    outputs:
+      asset_path: ${{ steps.asset.outputs.asset }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pyinstaller
+      - run: |
+          pyinstaller --onefile --windowed ui_copy_tool.py
+          cp machine_list.json dist/
+          cp ignored_extensions.json dist/
+      - id: asset
+        run: echo "asset=dist/ui_copy_tool" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-macos-intel
           path: dist/*
 
   build-macos-arm64:
-    runs-on: macos-latest  # Apple Silicon runner
+    runs-on: macos-14
+    outputs:
+      asset_path: ${{ steps.asset.outputs.asset }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,24 +86,61 @@ jobs:
           pyinstaller --onefile --windowed ui_copy_tool.py
           cp machine_list.json dist/
           cp ignored_extensions.json dist/
+      - id: asset
+        run: echo "asset=dist/ui_copy_tool" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-macos-arm64
           path: dist/*
 
-  build-linux:
+  release:
+    needs: [build-windows, build-linux, build-macos-intel, build-macos-arm64]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          python-version: '3.13'
-      - run: pip install pyinstaller
-      - run: |
-          pyinstaller --onefile --windowed ui_copy_tool.py
-          cp machine_list.json dist/
-          cp ignored_extensions.json dist/
-      - uses: actions/upload-artifact@v4
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        id: create_release
         with:
-          name: one-to-many-linux
-          path: dist/*
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Windows binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/one-to-many-windows/ui_copy_tool.exe
+          asset_name: ui_copy_tool-windows.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/one-to-many-linux/ui_copy_tool
+          asset_name: ui_copy_tool-linux
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Intel binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/one-to-many-macos-intel/ui_copy_tool
+          asset_name: ui_copy_tool-macos-intel
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS ARM64 binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/one-to-many-macos-arm64/ui_copy_tool
+          asset_name: ui_copy_tool-macos-arm64
+          asset_content_type: application/octet-stream
