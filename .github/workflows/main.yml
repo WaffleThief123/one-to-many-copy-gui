@@ -94,37 +94,38 @@ jobs:
   release:
     needs: [build-windows, build-linux, build-macos-intel, build-macos-arm64]
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-    
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-        
+
+      - name: List downloaded artifact files (debug)
+        run: find artifacts
+
       - name: Install GitHub CLI
         run: |
           sudo apt update
           sudo apt install -y gh
-        
+
       - name: Authenticate gh CLI
         run: gh auth setup-git
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
       - name: Create Release and Upload Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME=${{ github.ref_name }}
           RELEASE_NAME="Release $TAG_NAME"
-        
+
           gh release create "$TAG_NAME" \
-            artifacts/one-to-many-windows/ui_copy_tool.exe#ui_copy_tool-windows.exe \
-            artifacts/one-to-many-linux/ui_copy_tool#ui_copy_tool-linux \
-            artifacts/one-to-many-macos-intel/ui_copy_tool#ui_copy_tool-macos-intel \
-            artifacts/one-to-many-macos-arm64/ui_copy_tool#ui_copy_tool-macos-arm64 \
+            "artifacts/one-to-many-windows/dist/ui_copy_tool.exe#ui_copy_tool-windows.exe" \
+            "artifacts/one-to-many-linux/dist/ui_copy_tool#ui_copy_tool-linux" \
+            "artifacts/one-to-many-macos-intel/dist/ui_copy_tool#ui_copy_tool-macos-intel" \
+            "artifacts/one-to-many-macos-arm64/dist/ui_copy_tool#ui_copy_tool-macos-arm64" \
             --title "$RELEASE_NAME" \
             --notes "Automated release for $TAG_NAME"
-        
