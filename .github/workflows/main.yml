@@ -23,7 +23,6 @@ jobs:
       - run: pip install pyinstaller
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
-          copy machine_list.json dist\
           copy ignored_extensions.json dist\
       - id: asset
         run: echo "asset=dist\\ui_copy_tool.exe" >> $GITHUB_OUTPUT
