@@ -128,9 +128,9 @@ jobs:
           RELEASE_NAME="Release $TAG_NAME"
 
           gh release create "$TAG_NAME" \
-            "artifacts/one-to-many-windows/dist/ui_copy_tool.exe#ui_copy_tool-windows.exe" \
-            "artifacts/one-to-many-linux/dist/ui_copy_tool#ui_copy_tool-linux" \
-            "artifacts/one-to-many-macos-intel/dist/ui_copy_tool#ui_copy_tool-macos-intel" \
-            "artifacts/one-to-many-macos-arm64/dist/ui_copy_tool#ui_copy_tool-macos-arm64" \
+            "artifacts/one-to-many-windows/dist/ui_copy_tool.exe#ui_copy_tool-windows.zip" \
+            "artifacts/one-to-many-linux/dist/ui_copy_tool#ui_copy_tool-linuxz.zip" \
+            "artifacts/one-to-many-macos-intel/dist/ui_copy_tool#ui_copy_tool-macos-intel.zip" \
+            "artifacts/one-to-many-macos-arm64/dist/ui_copy_tool#ui_copy_tool-macos-arm64.zip" \
             --title "$RELEASE_NAME" \
             --notes "Automated release for $TAG_NAME"
