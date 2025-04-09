@@ -8,10 +8,11 @@ on:
       - 'v*'
 
 permissions:
-  contents: write  # Required to create releases and upload assets
+  contents: write
 
 jobs:
   build-windows:
+    if: github.ref_type == 'tag' || github.ref_name == 'develop'
     runs-on: windows-latest
     outputs:
       asset_path: ${{ steps.asset.outputs.asset }}
@@ -32,6 +33,7 @@ jobs:
           path: dist\*
 
   build-linux:
+    if: github.ref_type == 'tag' || github.ref_name == 'develop'
     runs-on: ubuntu-latest
     outputs:
       asset_path: ${{ steps.asset.outputs.asset }}
@@ -52,6 +54,7 @@ jobs:
           path: dist/*
 
   build-macos-intel:
+    if: github.ref_type == 'tag' || github.ref_name == 'develop'
     runs-on: macos-13
     outputs:
       asset_path: ${{ steps.asset.outputs.asset }}
@@ -72,6 +75,7 @@ jobs:
           path: dist/*
 
   build-macos-arm64:
+    if: github.ref_type == 'tag' || github.ref_name == 'develop'
     runs-on: macos-14
     outputs:
       asset_path: ${{ steps.asset.outputs.asset }}
@@ -92,6 +96,7 @@ jobs:
           path: dist/*
 
   release:
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [build-windows, build-linux, build-macos-intel, build-macos-arm64]
     runs-on: ubuntu-latest
     steps:
