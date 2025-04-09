@@ -23,10 +23,11 @@ jobs:
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
           copy ignored_extensions.json dist\
+          Compress-Archive -Path dist\* -DestinationPath one-to-many-windows.zip
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-windows
-          path: dist/*
+          path: one-to-many-windows.zip
 
   build-linux:
     if: github.ref_type == 'tag' || github.ref_name == 'develop'
@@ -40,10 +41,11 @@ jobs:
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
           cp ignored_extensions.json dist/
+          zip -r one-to-many-linux.zip dist/
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-linux
-          path: dist/*
+          path: one-to-many-linux.zip
 
   build-macos-intel:
     if: github.ref_type == 'tag' || github.ref_name == 'develop'
@@ -57,14 +59,15 @@ jobs:
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
           cp ignored_extensions.json dist/
+          zip -r one-to-many-macos-intel.zip dist/
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-macos-intel
-          path: dist/*
+          path: one-to-many-macos-intel.zip
 
   build-macos-applesilicon:
     if: github.ref_type == 'tag' || github.ref_name == 'develop'
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -74,14 +77,19 @@ jobs:
       - run: |
           pyinstaller --onefile --windowed ui_copy_tool.py
           cp ignored_extensions.json dist/
+          zip -r one-to-many-macos-applesilicon.zip dist/
       - uses: actions/upload-artifact@v4
         with:
           name: one-to-many-macos-applesilicon
-          path: dist/*
+          path: one-to-many-macos-applesilicon.zip
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-windows, build-linux, build-macos-intel, build-macos-applesilicon]
+    needs:
+      - build-windows
+      - build-linux
+      - build-macos-intel
+      - build-macos-applesilicon
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +99,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: Show artifact structure (debug)
+      - name: List artifact contents (debug)
         run: find artifacts
 
       - name: Install GitHub CLI
@@ -104,7 +112,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release with Assets
+      - name: Create GitHub Release with Zipped Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -112,9 +120,9 @@ jobs:
           RELEASE_NAME="Release $TAG_NAME"
 
           gh release create "$TAG_NAME" \
-            "artifacts/one-to-many-windows/ui_copy_tool.exe#ui_copy_tool-windows.exe" \
-            "artifacts/one-to-many-linux/ui_copy_tool#ui_copy_tool-linux" \
-            "artifacts/one-to-many-macos-intel/ui_copy_tool#ui_copy_tool-macos-intel" \
-            "artifacts/one-to-many-macos-applesilicon/ui_copy_tool#ui_copy_tool-macos-applesilicon" \
+            "artifacts/one-to-many-windows/one-to-many-windows.zip#ui_copy_tool-windows.zip" \
+            "artifacts/one-to-many-linux/one-to-many-linux.zip#ui_copy_tool-linux.zip" \
+            "artifacts/one-to-many-macos-intel/one-to-many-macos-intel.zip#ui_copy_tool-macos-intel.zip" \
+            "artifacts/one-to-many-macos-applesilicon/one-to-many-macos-applesilicon.zip#ui_copy_tool-macos-applesilicon.zip" \
             --title "$RELEASE_NAME" \
             --notes "Automated release for $TAG_NAME"
